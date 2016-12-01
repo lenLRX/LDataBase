@@ -31,6 +31,10 @@
 #builds
 build/
 
+#vscode
+
+.vscode/
+
 CMakeCache.txt
 CMakeFiles
 CMakeScripts

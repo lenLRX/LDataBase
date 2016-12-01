@@ -1,0 +1,5 @@
+aux_source_directory(. LOG_SOURCE)
+
+add_library(log_static STATIC ${LOG_SOURCE})
+SET_TARGET_PROPERTIES(log_static PROPERTIES OUTPUT_NAME "log")  
+SET_TARGET_PROPERTIES(log_static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
