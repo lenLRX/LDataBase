@@ -9,10 +9,10 @@ class tree
 {
   public:
     tree() = default;
-    virtual ~tree();
-    virtual void put(K key,V value) = 0;
-	virtual void remove(K key) = 0;
-    virtual pair<bool,V> get(K key) = 0;
+    virtual ~tree(){}
+    virtual void put(const K& key,const V& value) = 0;
+	virtual bool remove(const K& key) = 0;
+    virtual pair<bool,V> get(const K& key) = 0;
 };
 
 #endif //__TREE_H__

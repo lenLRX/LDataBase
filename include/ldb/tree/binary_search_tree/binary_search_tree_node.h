@@ -6,7 +6,7 @@ class binary_search_tree_node
 {
 public:
    binary_search_tree_node():left(nullptr),right(nullptr),parent(nullptr){}
-   binary_search_tree_node(K& key,V& value):key(key),value(value),
+   binary_search_tree_node(const K& key,const V& value):key(key),value(value),
    left(nullptr),right(nullptr),parent(nullptr){}
 
    ~binary_search_tree_node() = default;

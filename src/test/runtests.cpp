@@ -9,7 +9,7 @@ using namespace std;
 
 int main(){
 	srand(time(0));
-	Logger::getInstance().redirectStream("temp/log.txt");
+	//Logger::getInstance().redirectStream("temp/log.txt");
 	
 	RUNALLTEST;
 
