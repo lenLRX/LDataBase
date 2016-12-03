@@ -52,5 +52,15 @@ bool check_binary_search_tree(){
 	return true;
 }
 
+bool remove_values_binary_search_tree(){
+	bool b = true;
+	for(int i = 0;i < test_scale;i++){
+		bool ret =  _tree.remove(keys[i]);
+		b = b & ret;
+	}
+	return b;
+}
+
 ADDTEST(build_binary_search_tree)
 ADDTEST(check_binary_search_tree)
+ADDTEST(remove_values_binary_search_tree)

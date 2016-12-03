@@ -19,7 +19,7 @@ public:
 			tree_node* curr = root;
 
 			while(true){
-				if(curr->key > key){
+				if(key > curr->key){
 					if(curr->right != nullptr){
 						curr = curr->right;
 					}else{
@@ -29,7 +29,7 @@ public:
 						return;
 					}
 				}
-				else if(curr->key < key){
+				else if(key < curr->key){
 					if(curr->left != nullptr){
 						curr = curr->left;
 					}else{
@@ -54,11 +54,17 @@ public:
 		}else{
 			if(to_delete->left == nullptr && to_delete->right == nullptr){
 				//no child
-				if(to_delete->value > to_delete->parent->value){
-					to_delete->parent->right = nullptr;
-				}else{
-					to_delete->parent->left = nullptr;
+				if(to_delete->parent == nullptr){
+					root = nullptr;
 				}
+				else{
+					if(to_delete->value > to_delete->parent->value){
+						to_delete->parent->right = nullptr;
+					}else{
+						to_delete->parent->left = nullptr;
+					}
+				}
+				
 				delete to_delete;
 				return true;
 			}else if(to_delete->left != nullptr && to_delete->right != nullptr){
@@ -75,7 +81,7 @@ public:
 					//and connect right sub tree to right_most_lchild
 					root = to_delete->left;
 				}else{
-					if(to_delete->value > to_delete->parent->value){
+					if(to_delete->key > to_delete->parent->key){
 						to_delete->parent->right = to_delete->left;
 					}else{
 						to_delete->parent->left = to_delete->left;
@@ -93,7 +99,7 @@ public:
 					if(to_delete->parent == nullptr){
 						root = to_delete->left;
 					}else{
-						if(to_delete->value > to_delete->parent->value){
+						if(to_delete->key > to_delete->parent->key){
 							to_delete->parent->right = to_delete->left;
 						}else{
 							to_delete->parent->left = to_delete->left;
@@ -105,7 +111,7 @@ public:
 					if(to_delete->parent == nullptr){
 						root = to_delete->right;
 					}else{
-						if(to_delete->value > to_delete->parent->value){
+						if(to_delete->key > to_delete->parent->key){
 							to_delete->parent->right = to_delete->right;
 						}else{
 							to_delete->parent->left = to_delete->right;
@@ -122,10 +128,10 @@ public:
     virtual pair<bool,V> get(const K& key){
 		tree_node* curr = root;
 		while(curr != nullptr){
-			if(curr->key > key){
+			if(key > curr->key){
 				curr = curr->right;
 			}
-			else if(curr->key < key){
+			else if(key < curr->key){
 				curr = curr->left;
 			}else{
 				// curr->key == key overwrite value 
@@ -138,11 +144,11 @@ private:
     tree_node* get_ptr(const K& key){
 		tree_node* curr = root;
 		while(curr != nullptr){
-			if(curr->key > key){
-				curr = curr->right;
-			}
-			else if(curr->key < key){
+			if(key < curr->key){
 				curr = curr->left;
+			}
+			else if(key > curr->key){
+				curr = curr->right;
 			}else{
 				// return ptr
 				return curr;
