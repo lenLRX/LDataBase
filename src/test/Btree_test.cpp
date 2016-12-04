@@ -1,14 +1,16 @@
 #include <test/test.h>
 #include <log/log.h>
-#include <ldb/tree/binary_search_tree/binary_search_tree.h>
+#include <ldb/tree/Btree/Btree.h>
 #include <vector>
 #include <random>
 #include <algorithm>
 #include <time.h>
 using namespace std;
-static binary_search_tree<int,int> _tree;
+using namespace BtreeNS;
 
-static const int test_scale = 100000;
+static Btree<int,int> _tree(10);
+
+static const int test_scale = 100;
 
 static vector<int> keys;
 static vector<int> values;
@@ -25,7 +27,7 @@ static uniform_int_distribution<int> distribution(1,10000);
 
 static int RandomNumber () { return (distribution(gen)); }
 
-bool build_binary_search_tree(){
+bool build_Btree(){
 	keys.resize(test_scale);
 	values.resize(test_scale);
 
@@ -41,6 +43,7 @@ bool build_binary_search_tree(){
 	return true;
 }
 
+/*
 bool check_binary_search_tree(){
 	for(int i = 0;i < test_scale;i++){
 		auto _got_value = _tree.get(keys[i]);
@@ -60,7 +63,10 @@ bool remove_values_binary_search_tree(){
 	}
 	return b;
 }
+*/
 
-ADDTEST(build_binary_search_tree)
+ADDTEST(build_Btree)
+/*
 ADDTEST(check_binary_search_tree)
 ADDTEST(remove_values_binary_search_tree)
+*/

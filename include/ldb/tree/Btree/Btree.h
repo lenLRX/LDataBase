@@ -61,16 +61,16 @@ namespace BtreeNS
 		virtual bool remove(const K& key){
 			;
 		}
-		
+
 		virtual pair<bool,V> get(const K& key){
 			;
 		}
 	private: 
         void split(node<K,V>* pnode){
-			if(pnode->node_type == Leaf)
-			    split_leaf(pnode);
+			if(pnode->type == Leaf)
+			    split_leaf(static_cast<Leaf_node<K,V>*>(pnode));
 			else
-			    split_Internal(pnode);
+			    split_Internal(static_cast<Internal_node<K,V>*>(pnode));
 		}
 
 		void split_Internal(Internal_node<K,V>* internal){
@@ -95,7 +95,7 @@ namespace BtreeNS
 			right_node_size * sizeof(node<K,V>*));
 
 			internal->num_children = half_order;
-			right_node->num_chidlren = right_node_size;
+			right_node->num_children = right_node_size;
 
 			if(internal->parent == nullptr){
 				//this node was root 

@@ -20,15 +20,16 @@ namespace BtreeNS
 	{
 	public:
 		node(int order,node_type node_type):
-		order(order),node_type(node_type),
+		order(order),type(node_type),
 		num_children(0),parent(nullptr){}
 
 		virtual node<K,V>* get_child_of(const K& key) = 0;
 		virtual ~node(){}
 		int order;
 		int num_children;
-		node_type node_type;
+		node_type type;
 		Internal_node<K,V>* parent;
+		K* keys;
 	};
 
 	template<typename K,typename V>
@@ -38,6 +39,7 @@ namespace BtreeNS
 	    using node<K,V>::order;
         using node<K,V>::num_children;
 		using node<K,V>::parent;
+		using node<K,V>::keys;
 	    Leaf_node(int order):node<K,V>(order,Leaf){
 			keys = new K[order];
 			values = new V[order];
@@ -90,7 +92,6 @@ namespace BtreeNS
 			return nullptr;
 		}
 		
-	    K* keys;
 		V* values;
 	};
 
@@ -101,6 +102,7 @@ namespace BtreeNS
 	    using node<K,V>::order;
         using node<K,V>::num_children;
 		using node<K,V>::parent;
+		using node<K,V>::keys;
 
 	    Internal_node(int order):node<K,V>(order,Internal){
 			keys = new K[order - 1];
@@ -136,11 +138,11 @@ namespace BtreeNS
 				//     \   \
 				//   3  4   5
 
-				memove(keys,
+				memmove(keys,
 				keys + 1,
 				(num_children - 1) * sizeof(K));
 
-				memove(children,
+				memmove(children,
 				children,
 				num_children * sizeof(node<K,V>*));
 
@@ -160,11 +162,11 @@ namespace BtreeNS
 
 				for(int i = 0;i < num_children - 2;i++){
 					if(child_key > keys[i]){
-						memove(keys + i + 1,
+						memmove(keys + i + 1,
 						keys + i + 2,
 						(num_children - 2 - i) * sizeof(K));
 
-						memove(children + i + 2,
+						memmove(children + i + 2,
 						children + i + 3,
 						(num_children - 2 - i) * sizeof(node<K,V>*));
 
@@ -178,7 +180,7 @@ namespace BtreeNS
 				if(!done){
 					//put new child to the back
 					keys[num_children - 1] = child_key;
-					children[num_children] = children;
+					children[num_children] = child;
 				}
 			}
 
@@ -186,7 +188,6 @@ namespace BtreeNS
 
 		}
 
-		K* keys;
 		node<K,V>** children;
 	};
 };
