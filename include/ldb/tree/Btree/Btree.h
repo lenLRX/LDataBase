@@ -2,6 +2,11 @@
 #define __BTREE_H__
 #include "../tree.h"
 #include "Btree_node.h"
+#include <iostream>
+#include <map>
+#include <string>
+#include <sstream>
+#include <iomanip>
 /*
 https://en.wikipedia.org/wiki/B-tree
 
@@ -24,6 +29,14 @@ namespace BtreeNS
 	public:
 		Btree(int order):order(order),root(nullptr){}
 		virtual ~Btree(){}
+
+		void visualize(){
+			std::map<int,std::string> datas;
+			show_node(root,datas,0);
+			for(int i = 0;i < datas.size();i++){
+				std::cout << datas[i] << std::endl;
+			}
+		}
 
 		virtual void put(const K& key,const V& value){
 			if(root == nullptr){
@@ -87,13 +100,23 @@ namespace BtreeNS
 			int right_node_size = order - half_order;
 
 			/*
+			// even:
 			//  1  2  3  4  5
 			//   \  \  \  \  \
 			// 0  1  2  3  4  5
-			//after split 
+			// after split 
 			//   1   2   |  4  5
 			//    \   \  |   \  \
 			// 0   1   2 | 3  4  5
+			//
+			// odd:
+			//  1 2 3 4
+			//   \ \ \ \
+			//  0 1 2 3 4
+			// after split  half_order: 2  right_node_size: 3
+			//  1   | 3 4
+			//   \  |  \ \
+			//  0 1 | 2 3 4
 			*/
 
 			memmove(right_node->keys,
@@ -168,6 +191,94 @@ namespace BtreeNS
 				right_node->parent = leaf->parent;
 			}
 
+		}
+
+		void show_node(node<K,V>* p,std::map<int,std::string>& datas,int depth){
+			if(p->type == Leaf){
+				Leaf_node<K, V>* pleaf = static_cast<Leaf_node<K, V>*>(p);
+				std::string sepline;
+				sepline += "|";
+				for(int i = 0;i < pleaf->num_children * 7 - 1;i++){
+					sepline += "-";
+				}
+				sepline += "|";
+
+				std::stringstream keys_line;
+				keys_line << "|";
+				for(int i = 0;i < pleaf->num_children;i++){
+					keys_line << std::setw(6) << std::setfill(' ') << pleaf->keys[i] << "|";
+				}
+
+				std::stringstream vals_line;
+				vals_line << "|";
+				for(int i = 0;i < pleaf->num_children;i++){
+					vals_line << std::setw(6) << std::setfill(' ') << pleaf->values[i] << "|";
+				}
+
+				/*
+				sepline
+				keys
+				sepline 
+				values 
+				seplines
+				emptyline
+
+				total:6
+				*/
+
+				datas[6*depth + 0] += sepline + " ";
+				datas[6*depth + 1] += keys_line.str() + " ";
+				datas[6*depth + 2] += sepline + " ";
+				datas[6*depth + 3] += vals_line.str() + " ";
+				datas[6*depth + 4] += sepline + " ";
+				datas[6*depth + 5] += " ";
+			}
+			else
+			{
+				//internal 
+				Internal_node<K, V>* pinternal = static_cast<Internal_node<K, V>*>(p);
+				std::string sepline;
+				sepline += "|";
+				for(int i = 0;i < pinternal->num_children * 7 - 1;i++){
+					sepline += "-";
+				}
+				sepline += "|";
+
+				std::stringstream keys_line;
+				keys_line << "|";
+				for(int i = 0;i < pinternal->num_children - 1;i++){
+					keys_line << std::setw(6) << std::setfill(' ') << pinternal->keys[i] << "|";
+				}
+				keys_line << "      |";//Internal_node has n - 1 keys
+
+				std::stringstream vals_line;
+				vals_line << "|";
+				for(int i = 0;i < pinternal->num_children;i++){
+					vals_line << std::setw(6) << std::setfill(' ') << pinternal->children[i]->keys[0] << "|";
+				}
+
+				/*
+				sepline
+				keys
+				sepline 
+				values 
+				seplines
+				emptyline
+
+				total:6
+				*/
+
+				datas[6*depth + 0] += sepline + " ";
+				datas[6*depth + 1] += keys_line.str() + " ";
+				datas[6*depth + 2] += sepline + " ";
+				datas[6*depth + 3] += vals_line.str() + " ";
+				datas[6*depth + 4] += sepline + " ";
+				datas[6*depth + 5] += " ";
+
+				for(int i = 0;i < pinternal->num_children;i++){
+					show_node(pinternal->children[i],datas,depth + 1);
+				}
+			}
 		}
 
 	    int order;

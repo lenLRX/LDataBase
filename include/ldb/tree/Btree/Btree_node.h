@@ -20,8 +20,8 @@ namespace BtreeNS
 	class node
 	{
 	public:
-		node(int order,node_type node_type):
-		order(order),num_children(0),type(Leaf),
+		node(int order,node_type type):
+		order(order),num_children(0),type(type),
 		parent(nullptr),keys(nullptr){}
 
 		virtual node<K,V>* get_child_of(const K& key) = 0;
@@ -130,15 +130,21 @@ namespace BtreeNS
 		}
 
 		virtual node<K,V>* get_child_of(const K& key){
-			if(key < keys[0]){
-				return children[0];
-			}
+			/*
+			//  get 11
+			//  5  9  12
+			//   \  \   \
+			//  0 5  9   12
+			//  num_children : 4
+			//  return 2
+			*/
+
 			for(int i = 0;i < num_children - 1;i++){
-				if(key >= keys[i]){
-					return children[i + 1];
+				if(key < keys[i]){
+					return children[i];
 				}
 			}
-			return nullptr;//-Wreturn-type
+			return children[num_children - 1];
 		}
 
 		void put(node<K,V>* child){
@@ -156,7 +162,7 @@ namespace BtreeNS
 				//     \   \
 				//   3  4   5
 				*/
-				
+
 				memmove(keys + 1,
 				keys,
 				(num_children - 1) * sizeof(K));
@@ -170,28 +176,28 @@ namespace BtreeNS
 			}else{
 				/*
 				//before insert 7:
-				//     6   9
-				//      \   \
-				//    3  6   9
-				//after insert 7 (7 > key[0]):
-				//     6  7  9
-				//      \  \  \
-				//    3  6  7  9
+				//     3   6   9
+				//      \   \   \
+				//    2  3   6   9
+				//after insert 7 (7 < key[2]):
+				//     3  6  7  9
+				//      \  \  \  \
+				//     2 3  6  7  9
 				*/
 				bool done = false;
 
-				for(int i = 0;i < num_children - 2;i++){
-					if(child_key > keys[i]){
-						memmove(keys + i + 2,
-						keys + i + 1,
-						(num_children - 2 - i) * sizeof(K));
+				for(int i = 0;i < num_children - 1;i++){
+					if(child_key < keys[i]){
+						memmove(keys + i + 1,
+						keys + i,
+						(num_children - 1 - i) * sizeof(K));
 
-						memmove(children + i + 3,
-						children + i + 2,
-						(num_children - 2 - i) * sizeof(node<K,V>*));
+						memmove(children + i + 2,
+						children + i + 1,
+						(num_children - 1 - i) * sizeof(node<K,V>*));
 
-						keys[i + 1] = child_key;
-						children[i + 2] = child;
+						keys[i] = child_key;
+						children[i + 1] = child;
 
 						done = true;
 					}

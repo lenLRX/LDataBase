@@ -8,9 +8,9 @@
 using namespace std;
 using namespace BtreeNS;
 
-static Btree<int,int> _tree(100);
+static Btree<int,int> _tree(5);
 
-static const int test_scale = 100000;
+static const int test_scale = 30;
 
 static vector<int> keys;
 static vector<int> values;
@@ -45,8 +45,10 @@ bool build_Btree(){
 
 
 bool check_Btree(){
+	_tree.visualize();
 	for(int i = 0;i < test_scale;i++){
 		auto _got_value = _tree.get(keys[i]);
+		cout << "i: " << i << endl;
 		if(values[i] != _got_value.second){
 			cout << "key value not match expected: " << values[i] << " got " << _got_value.second << endl;
 			return false;
