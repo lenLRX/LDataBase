@@ -32,16 +32,8 @@ namespace BtreeNS
 				root = l;
 			}
 			else{
-				node<K,V>* leaf = root;
-				while(true){
-					node<K,V>* tmp = leaf->get_child_of(key);
-					if(tmp == nullptr)
-					    break;
-					else
-					    leaf = tmp;
-				}
-
-			    static_cast<Leaf_node<K,V>*>(leaf)->put(key,value);
+				Leaf_node<K,V>* leaf = getLeafNode(key);
+				leaf->put(key,value);
 
                 //back trace to split nodes
 				node<K,V>* bt = leaf;
@@ -59,13 +51,29 @@ namespace BtreeNS
 		}
 
 		virtual bool remove(const K& key){
-			;
+			return false;
 		}
 
 		virtual pair<bool,V> get(const K& key){
-			;
+			Leaf_node<K,V>* leaf = getLeafNode(key);
+			if(nullptr == leaf)
+			    return std::pair<bool,V>(false,V());
+			else
+			    return leaf->get(key);
 		}
 	private: 
+	    Leaf_node<K,V>* getLeafNode(const K& key){
+			node<K,V>* leaf = root;
+			while(true){
+				node<K,V>* tmp = leaf->get_child_of(key);
+				if(tmp == nullptr)
+				    break;
+				else
+				    leaf = tmp;
+			}
+			return static_cast<Leaf_node<K,V>*>(leaf);
+		}
+
         void split(node<K,V>* pnode){
 			if(pnode->type == Leaf)
 			    split_leaf(static_cast<Leaf_node<K,V>*>(pnode));
@@ -76,9 +84,9 @@ namespace BtreeNS
 		void split_Internal(Internal_node<K,V>* internal){
 			Internal_node<K, V>* right_node = new Internal_node<K, V>(order);
 			int half_order = 0.5 * order;
-			int total_key_after_split = order - 2;
 			int right_node_size = order - half_order;
 
+			/*
 			//  1  2  3  4  5
 			//   \  \  \  \  \
 			// 0  1  2  3  4  5
@@ -86,6 +94,7 @@ namespace BtreeNS
 			//   1   2   |  4  5
 			//    \   \  |   \  \
 			// 0   1   2 | 3  4  5
+			*/
 
 			memmove(right_node->keys,
 			internal->keys + half_order,

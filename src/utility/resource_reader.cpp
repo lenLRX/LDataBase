@@ -356,11 +356,9 @@ const map<string,string> content_types = {
 Resource ResourceReader::getResource(string path){
 	Resource resource;
 	int len = path.length();
-	int dotpos = -1;
 	string suffix;
 	for(int i = len - 1;i >=0; i--){
 		if(path[i] == '.'){
-			dotpos = i;
 			break;
 		}
 		suffix.push_back(path[i]);

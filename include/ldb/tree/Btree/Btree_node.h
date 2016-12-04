@@ -1,6 +1,7 @@
 #ifndef __BTREE_NODE_H__
 #define __BTREE_NODE_H__
 
+#include <utility>//for std::pair
 #include <cstdlib>
 #include <cstring>//for memmove
 
@@ -20,8 +21,8 @@ namespace BtreeNS
 	{
 	public:
 		node(int order,node_type node_type):
-		order(order),type(node_type),
-		num_children(0),parent(nullptr){}
+		order(order),num_children(0),type(Leaf),
+		parent(nullptr),keys(nullptr){}
 
 		virtual node<K,V>* get_child_of(const K& key) = 0;
 		virtual ~node(){}
@@ -60,7 +61,7 @@ namespace BtreeNS
 				int insert_before = 0;
 
 				for(;insert_before < num_children;insert_before++){
-					if(keys[insert_before] < key){
+					if(keys[insert_before] > key){
 						//move K,Vs 1 pos back 
 						memmove(keys + insert_before + 1,
 						keys + insert_before,
@@ -70,6 +71,12 @@ namespace BtreeNS
 						values + insert_before,
 						(num_children - insert_before) * sizeof(V));
 
+						keys[insert_before] = key;
+						values[insert_before] = value;
+
+						done = true;
+						break;
+					}else if(keys[insert_before] == key){
 						keys[insert_before] = key;
 						values[insert_before] = value;
 
@@ -86,6 +93,15 @@ namespace BtreeNS
 			}
 			
 			++num_children;
+		}
+
+		std::pair<bool,V> get(const K& key){
+			for(int i = 0 ;i < num_children;++i){
+				if(keys[i] == key){
+					return std::pair<bool,V>(true,values[i]);
+				}
+			}
+			return std::pair<bool,V>(false,V());
 		}
 
 		virtual node<K,V>* get_child_of(const K& key){
@@ -122,12 +138,14 @@ namespace BtreeNS
 					return children[i + 1];
 				}
 			}
+			return nullptr;//-Wreturn-type
 		}
 
 		void put(node<K,V>* child){
 			const K& child_key = child->keys[0];
 
 			if(child_key < keys[0]){
+				/*
 				//new child small than all children thus push it to the fisrt slot.
 				//before insert 3:
 				//    5
@@ -137,7 +155,8 @@ namespace BtreeNS
 				//    4   5
 				//     \   \
 				//   3  4   5
-
+				*/
+				
 				memmove(keys + 1,
 				keys,
 				(num_children - 1) * sizeof(K));
@@ -149,6 +168,7 @@ namespace BtreeNS
 				keys[0] = children[1]->keys[0];
 				children[0] = child;
 			}else{
+				/*
 				//before insert 7:
 				//     6   9
 				//      \   \
@@ -157,7 +177,7 @@ namespace BtreeNS
 				//     6  7  9
 				//      \  \  \
 				//    3  6  7  9
-
+				*/
 				bool done = false;
 
 				for(int i = 0;i < num_children - 2;i++){

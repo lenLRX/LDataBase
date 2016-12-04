@@ -8,9 +8,9 @@
 using namespace std;
 using namespace BtreeNS;
 
-static Btree<int,int> _tree(4);
+static Btree<int,int> _tree(100);
 
-static const int test_scale = 100;
+static const int test_scale = 100000;
 
 static vector<int> keys;
 static vector<int> values;
@@ -43,8 +43,8 @@ bool build_Btree(){
 	return true;
 }
 
-/*
-bool check_binary_search_tree(){
+
+bool check_Btree(){
 	for(int i = 0;i < test_scale;i++){
 		auto _got_value = _tree.get(keys[i]);
 		if(values[i] != _got_value.second){
@@ -54,7 +54,7 @@ bool check_binary_search_tree(){
 	}
 	return true;
 }
-
+/*
 bool remove_values_binary_search_tree(){
 	bool b = true;
 	for(int i = 0;i < test_scale;i++){
@@ -66,7 +66,7 @@ bool remove_values_binary_search_tree(){
 */
 
 ADDTEST(build_Btree)
+ADDTEST(check_Btree)
 /*
-ADDTEST(check_binary_search_tree)
 ADDTEST(remove_values_binary_search_tree)
 */
