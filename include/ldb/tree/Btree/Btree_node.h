@@ -117,7 +117,7 @@ namespace BtreeNS
 			if(key < keys[0]){
 				return children[0];
 			}
-			for(int i = 0;i < num_children;i++){
+			for(int i = 0;i < num_children - 1;i++){
 				if(key >= keys[i]){
 					return children[i + 1];
 				}
@@ -138,11 +138,11 @@ namespace BtreeNS
 				//     \   \
 				//   3  4   5
 
-				memmove(keys,
-				keys + 1,
+				memmove(keys + 1,
+				keys,
 				(num_children - 1) * sizeof(K));
 
-				memmove(children,
+				memmove(children + 1,
 				children,
 				num_children * sizeof(node<K,V>*));
 
@@ -162,18 +162,18 @@ namespace BtreeNS
 
 				for(int i = 0;i < num_children - 2;i++){
 					if(child_key > keys[i]){
-						memmove(keys + i + 1,
-						keys + i + 2,
+						memmove(keys + i + 2,
+						keys + i + 1,
 						(num_children - 2 - i) * sizeof(K));
 
-						memmove(children + i + 2,
-						children + i + 3,
+						memmove(children + i + 3,
+						children + i + 2,
 						(num_children - 2 - i) * sizeof(node<K,V>*));
 
 						keys[i + 1] = child_key;
 						children[i + 2] = child;
 
-						done =true;
+						done = true;
 					}
 				}
 

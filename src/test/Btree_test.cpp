@@ -8,7 +8,7 @@
 using namespace std;
 using namespace BtreeNS;
 
-static Btree<int,int> _tree(10);
+static Btree<int,int> _tree(4);
 
 static const int test_scale = 100;
 

@@ -47,7 +47,7 @@ namespace BtreeNS
 				node<K,V>* bt = leaf;
 				
 				while(bt != nullptr){
-					if(bt->num_children){
+					if(bt->num_children == order){
 						split(bt);
 						bt = bt->parent;
 					}
@@ -76,6 +76,7 @@ namespace BtreeNS
 		void split_Internal(Internal_node<K,V>* internal){
 			Internal_node<K, V>* right_node = new Internal_node<K, V>(order);
 			int half_order = 0.5 * order;
+			int total_key_after_split = order - 2;
 			int right_node_size = order - half_order;
 
 			//  1  2  3  4  5
@@ -86,12 +87,12 @@ namespace BtreeNS
 			//    \   \  |   \  \
 			// 0   1   2 | 3  4  5
 
-			memmove(internal->keys + half_order + 1,
-			right_node->keys,
+			memmove(right_node->keys,
+			internal->keys + half_order,
 			(right_node_size - 1) * sizeof(K));
 
-			memmove(internal->children + half_order,
-			right_node->children,
+			memmove(right_node->children,
+			internal->children + half_order,
 			right_node_size * sizeof(node<K,V>*));
 
 			internal->num_children = half_order;
@@ -127,12 +128,12 @@ namespace BtreeNS
 
 			int right_node_size = order - half_order;
 
-			memmove(leaf->keys + half_order,
-			right_node->keys,
+			memmove(right_node->keys,
+			leaf->keys + half_order,
 			right_node_size * sizeof(K));
 
-			memmove(leaf->values + half_order,
-			right_node->values,
+			memmove(right_node->values,
+			leaf->values + half_order,
 			right_node_size * sizeof(V));
 
 			leaf->num_children = half_order;
