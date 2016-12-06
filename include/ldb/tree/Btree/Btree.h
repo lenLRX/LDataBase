@@ -95,9 +95,11 @@ namespace BtreeNS
 		}
 
 		void split_Internal(Internal_node<K,V>* internal){
-			Internal_node<K, V>* right_node = new Internal_node<K, V>(order);
+			
 			int half_order = 0.5 * order;
 			int right_node_size = order - half_order;
+
+			Internal_node<K, V>* right_node = new Internal_node<K, V>(internal->keys[half_order], order);
 
 			/*
 			// even:
@@ -132,9 +134,10 @@ namespace BtreeNS
 
 			if(internal->parent == nullptr){
 				//this node was root 
-				Internal_node<K,V>* next_root = new Internal_node<K,V>(order);
+				Internal_node<K,V>* next_root = new Internal_node<K,V>(
+					right_node->node_key,order);
 				next_root->num_children = 2;
-				next_root->keys[0] = right_node->keys[0];
+				next_root->keys[0] = right_node->node_key;
 				next_root->children[0] = internal;
 				next_root->children[1] = right_node;
 
@@ -147,6 +150,10 @@ namespace BtreeNS
 			else{
 				internal->parent->put(right_node);
 				right_node->parent = internal->parent;
+			}
+
+			for(int i = 0;i < right_node->num_children;i++){
+				right_node->children[i]->parent = right_node;
 			}
 
 		}
@@ -173,7 +180,7 @@ namespace BtreeNS
 
 			if(leaf->parent == nullptr){
 				//this leaf was root 
-				Internal_node<K,V>* next_root = new Internal_node<K,V>(order);
+				Internal_node<K,V>* next_root = new Internal_node<K,V>(right_node->keys[0],order);
 				next_root->num_children = 2;
 				next_root->keys[0] = right_node->keys[0];
 				next_root->children[0] = leaf;
@@ -203,6 +210,17 @@ namespace BtreeNS
 				}
 				sepline += "|";
 
+				std::stringstream parent_line;
+
+                if(pleaf->parent == nullptr)
+				    parent_line << "|  NULL|";
+				else
+				    parent_line << "|" << std::setw(6) << std::setfill(' ') << pleaf->parent->node_key << "|";
+
+				for(int i = 1;i < pleaf->num_children;i++){
+					parent_line << "      |";
+				}
+
 				std::stringstream keys_line;
 				keys_line << "|";
 				for(int i = 0;i < pleaf->num_children;i++){
@@ -217,21 +235,24 @@ namespace BtreeNS
 
 				/*
 				sepline
+				parent_line
+				sepline
 				keys
 				sepline 
 				values 
 				seplines
 				emptyline
 
-				total:6
+				total:8
 				*/
-
-				datas[6*depth + 0] += sepline + " ";
-				datas[6*depth + 1] += keys_line.str() + " ";
-				datas[6*depth + 2] += sepline + " ";
-				datas[6*depth + 3] += vals_line.str() + " ";
-				datas[6*depth + 4] += sepline + " ";
-				datas[6*depth + 5] += " ";
+				datas[8*depth + 0] += sepline + " ";
+				datas[8*depth + 1] += parent_line.str() + " ";
+				datas[8*depth + 2] += sepline + " ";
+				datas[8*depth + 3] += keys_line.str() + " ";
+				datas[8*depth + 4] += sepline + " ";
+				datas[8*depth + 5] += vals_line.str() + " ";
+				datas[8*depth + 6] += sepline + " ";
+				datas[8*depth + 7] += " ";
 			}
 			else
 			{
@@ -243,6 +264,17 @@ namespace BtreeNS
 					sepline += "-";
 				}
 				sepline += "|";
+
+				std::stringstream parent_line;
+
+                if(pinternal->parent == nullptr)
+				    parent_line << "|  NULL|";
+				else
+				    parent_line << "|" << std::setw(6) << std::setfill(' ') << pinternal->parent->node_key << "|";
+
+				for(int i = 1;i < pinternal->num_children;i++){
+					parent_line << "      |";
+				}
 
 				std::stringstream keys_line;
 				keys_line << "|";
@@ -259,21 +291,24 @@ namespace BtreeNS
 
 				/*
 				sepline
+				parent_line
+				sepline
 				keys
 				sepline 
 				values 
 				seplines
 				emptyline
 
-				total:6
+				total:8
 				*/
-
-				datas[6*depth + 0] += sepline + " ";
-				datas[6*depth + 1] += keys_line.str() + " ";
-				datas[6*depth + 2] += sepline + " ";
-				datas[6*depth + 3] += vals_line.str() + " ";
-				datas[6*depth + 4] += sepline + " ";
-				datas[6*depth + 5] += " ";
+				datas[8*depth + 0] += sepline + " ";
+				datas[8*depth + 1] += parent_line.str() + " ";
+				datas[8*depth + 2] += sepline + " ";
+				datas[8*depth + 3] += keys_line.str() + " ";
+				datas[8*depth + 4] += sepline + " ";
+				datas[8*depth + 5] += vals_line.str() + " ";
+				datas[8*depth + 6] += sepline + " ";
+				datas[8*depth + 7] += " ";
 
 				for(int i = 0;i < pinternal->num_children;i++){
 					show_node(pinternal->children[i],datas,depth + 1);

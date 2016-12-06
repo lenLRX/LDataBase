@@ -120,7 +120,7 @@ namespace BtreeNS
 		using node<K,V>::parent;
 		using node<K,V>::keys;
 
-	    Internal_node(int order):node<K,V>(order,Internal){
+	    Internal_node(K node_key,int order):node<K,V>(order,Internal),node_key(node_key){
 			keys = new K[order - 1];
 			children = new node<K,V>*[order];
 		}
@@ -148,9 +148,20 @@ namespace BtreeNS
 		}
 
 		void put(node<K,V>* child){
+			if(child->type == Leaf){
+				put(static_cast<Leaf_node<K,V>*>(child));
+			}
+			else{
+				put(static_cast<Internal_node<K,V>*>(child));
+			}
+		}
+
+		void put(Leaf_node<K,V>* child){
 			const K& child_key = child->keys[0];
 
-			if(child_key < keys[0]){
+			child->parent = this;
+
+			if(child_key < children[0]->keys[0]){
 				/*
 				//new child small than all children thus push it to the fisrt slot.
 				//before insert 3:
@@ -200,6 +211,7 @@ namespace BtreeNS
 						children[i + 1] = child;
 
 						done = true;
+						break;
 					}
 				}
 
@@ -213,6 +225,78 @@ namespace BtreeNS
 			++num_children;
 
 		}
+
+		void put(Internal_node<K,V>* child){
+			const K& child_key = child->node_key;
+
+			child->parent = this;
+
+			if(child_key < children[0]->keys[0]){
+				/*
+				//new child small than all children thus push it to the fisrt slot.
+				//before insert 3:
+				//    5
+				//     \
+				//   4  7
+				//after insert 3:
+				//    4   5
+				//     \   \
+				//   3  4   5
+				*/
+
+				memmove(keys + 1,
+				keys,
+				(num_children - 1) * sizeof(K));
+
+				memmove(children + 1,
+				children,
+				num_children * sizeof(node<K,V>*));
+
+				keys[0] = children[1]->keys[0];
+				children[0] = child;
+			}else{
+				/*
+				//before insert 7:
+				//     3   6   9
+				//      \   \   \
+				//    2  3   6   9
+				//after insert 7 (7 < key[2]):
+				//     3  6  7  9
+				//      \  \  \  \
+				//     2 3  6  7  9
+				*/
+				bool done = false;
+
+				for(int i = 0;i < num_children - 1;i++){
+					if(child_key < keys[i]){
+						memmove(keys + i + 1,
+						keys + i,
+						(num_children - 1 - i) * sizeof(K));
+
+						memmove(children + i + 2,
+						children + i + 1,
+						(num_children - 1 - i) * sizeof(node<K,V>*));
+
+						keys[i] = child_key;
+						children[i + 1] = child;
+
+						done = true;
+						break;
+					}
+				}
+
+				if(!done){
+					//put new child to the back
+					keys[num_children - 1] = child_key;
+					children[num_children] = child;
+				}
+			}
+
+			++num_children;
+
+		}
+
+		K node_key;
 
 		node<K,V>** children;
 	};

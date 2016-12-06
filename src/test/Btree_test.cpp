@@ -38,6 +38,7 @@ bool build_Btree(){
 
 	for(int i = 0;i < test_scale;i++){
 		_tree.put(keys[i],values[i]);
+		_tree.visualize();
 	}
 
 	return true;
@@ -50,7 +51,7 @@ bool check_Btree(){
 		auto _got_value = _tree.get(keys[i]);
 		cout << "i: " << i << endl;
 		if(values[i] != _got_value.second){
-			cout << "key value not match expected: " << values[i] << " got " << _got_value.second << endl;
+			cout << "key " << keys[i]<< " value not match expected: " << values[i] << " got " << _got_value.second << endl;
 			return false;
 		}
 	}
