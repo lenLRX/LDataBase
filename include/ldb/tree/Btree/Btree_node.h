@@ -120,13 +120,21 @@ namespace BtreeNS
 		using node<K,V>::parent;
 		using node<K,V>::keys;
 
-	    Internal_node(K node_key,int order):node<K,V>(order,Internal),node_key(node_key){
+	    Internal_node(int order):node<K,V>(order,Internal){
 			keys = new K[order - 1];
 			children = new node<K,V>*[order];
 		}
 		virtual ~Internal_node(){
 			delete[] keys;
 			delete[] children;
+		}
+
+		K getNodeKey(){
+			if(children[0]->type == Leaf){
+				return children[0]->keys[0];
+			}else{
+				return static_cast<Internal_node<K,V>*>(children[0])->getNodeKey();
+			}
 		}
 
 		virtual node<K,V>* get_child_of(const K& key){
@@ -227,7 +235,7 @@ namespace BtreeNS
 		}
 
 		void put(Internal_node<K,V>* child){
-			const K& child_key = child->node_key;
+			const K& child_key = child->getNodeKey();
 
 			child->parent = this;
 
@@ -295,8 +303,6 @@ namespace BtreeNS
 			++num_children;
 
 		}
-
-		K node_key;
 
 		node<K,V>** children;
 	};

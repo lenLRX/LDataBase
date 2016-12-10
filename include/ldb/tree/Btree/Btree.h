@@ -99,7 +99,7 @@ namespace BtreeNS
 			int half_order = 0.5 * order;
 			int right_node_size = order - half_order;
 
-			Internal_node<K, V>* right_node = new Internal_node<K, V>(internal->keys[half_order], order);
+			Internal_node<K, V>* right_node = new Internal_node<K, V>(order);
 
 			/*
 			// even:
@@ -134,10 +134,9 @@ namespace BtreeNS
 
 			if(internal->parent == nullptr){
 				//this node was root 
-				Internal_node<K,V>* next_root = new Internal_node<K,V>(
-					right_node->node_key,order);
+				Internal_node<K,V>* next_root = new Internal_node<K,V>(order);
 				next_root->num_children = 2;
-				next_root->keys[0] = right_node->node_key;
+				next_root->keys[0] = right_node->getNodeKey();
 				next_root->children[0] = internal;
 				next_root->children[1] = right_node;
 
@@ -180,7 +179,7 @@ namespace BtreeNS
 
 			if(leaf->parent == nullptr){
 				//this leaf was root 
-				Internal_node<K,V>* next_root = new Internal_node<K,V>(right_node->keys[0],order);
+				Internal_node<K,V>* next_root = new Internal_node<K,V>(order);
 				next_root->num_children = 2;
 				next_root->keys[0] = right_node->keys[0];
 				next_root->children[0] = leaf;
@@ -215,7 +214,7 @@ namespace BtreeNS
                 if(pleaf->parent == nullptr)
 				    parent_line << "|  NULL|";
 				else
-				    parent_line << "|" << std::setw(6) << std::setfill(' ') << pleaf->parent->node_key << "|";
+				    parent_line << "|" << std::setw(6) << std::setfill(' ') << static_cast<Internal_node<K,V>*>(pleaf->parent)->getNodeKey() << "|";
 
 				for(int i = 1;i < pleaf->num_children;i++){
 					parent_line << "      |";
@@ -270,7 +269,7 @@ namespace BtreeNS
                 if(pinternal->parent == nullptr)
 				    parent_line << "|  NULL|";
 				else
-				    parent_line << "|" << std::setw(6) << std::setfill(' ') << pinternal->parent->node_key << "|";
+				    parent_line << "|" << std::setw(6) << std::setfill(' ') << static_cast<Internal_node<K,V>*>(pinternal->parent)->getNodeKey() << "|";
 
 				for(int i = 1;i < pinternal->num_children;i++){
 					parent_line << "      |";
