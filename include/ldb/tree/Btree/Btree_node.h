@@ -95,6 +95,29 @@ namespace BtreeNS
 			++num_children;
 		}
 
+		bool remove(K key){
+			for(int i = 0;i < num_children;i++){
+				//remove 5   2 4 5 7 9
+				//
+				//           2 4 7 9
+				if(key == keys[i]){
+					memmove(keys + i,
+					keys + i + 1,
+					(num_children - i - 1) * sizeof(K)
+					);
+
+					memmove(values + i,
+					values + i + 1,
+					(num_children - i - 1) * sizeof(V)
+					);
+
+					--num_children;
+					return true;
+				}
+			}
+			return false;
+		}
+
 		std::pair<bool,V> get(const K& key){
 			for(int i = 0 ;i < num_children;++i){
 				if(keys[i] == key){
@@ -129,7 +152,7 @@ namespace BtreeNS
 			delete[] children;
 		}
 
-		K getNodeKey(){
+		K& getNodeKey(){
 			if(children[0]->type == Leaf){
 				return children[0]->keys[0];
 			}else{
@@ -260,7 +283,7 @@ namespace BtreeNS
 				children,
 				num_children * sizeof(node<K,V>*));
 
-				keys[0] = children[1]->keys[0];
+				keys[0] = static_cast<Internal_node<K,V>*>(children[1])->getNodeKey();
 				children[0] = child;
 			}else{
 				/*
@@ -302,6 +325,67 @@ namespace BtreeNS
 
 			++num_children;
 
+		}
+
+		bool remove(K key){
+			bool ret = false;
+			if(key == getNodeKey()){
+				/*
+				// remove smallest key(1)
+				// num_children : 5
+				//   3  5  9  13
+				//    \  \  \  \
+				//   1 3  5  9  13
+				//
+				//  after remove
+				//   5  9  13
+				//    \  \  \
+				//   3 5  9  13
+				*/
+
+				memmove(keys,
+				keys + 1,
+				(num_children - 2) * sizeof(K)
+				);
+
+				memmove(children,
+				children + 1,
+				(num_children - 1) * sizeof(V)
+				);
+				ret = true;
+			}else{
+				/*
+				// remove 9
+				// num_children : 5
+				// 3  5  9  13
+				//  \  \  \  \
+				// 1 3  5  9  13
+				//
+				// after remove
+				// 3  5  13
+				//  \  \  \
+				// 1 3  5  13
+				*/
+				for(int i = 0;i < num_children - 1;i++){
+					if(keys[i] == key){
+						memmove(keys + i,
+						keys + i + 1,
+						(num_children - 2 - i) * sizeof(K)
+						);
+
+						memmove(children + i + 1,
+						children + i + 2,
+						(num_children - 2 - i) * sizeof(V)
+						);
+						ret = true;
+						break;
+					}
+				}
+			}
+
+			if(ret)
+			    --num_children;
+			return ret;
 		}
 
 		node<K,V>** children;

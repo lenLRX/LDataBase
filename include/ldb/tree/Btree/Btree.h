@@ -27,7 +27,7 @@ namespace BtreeNS
 	class Btree:public tree<K,V>
 	{
 	public:
-		Btree(int order):order(order),root(nullptr){}
+		Btree(int order):order(order),half_order(order / 2),root(nullptr){}
 		virtual ~Btree(){}
 
 		void visualize(){
@@ -64,6 +64,27 @@ namespace BtreeNS
 		}
 
 		virtual bool remove(const K& key){
+			if(root == nullptr){
+				return false;
+			}else{
+				Leaf_node<K,V>* leaf = getLeafNode(key);
+				if(!leaf->remove(key)){
+					return false;
+				}
+
+				//back trace to merge nodes
+				node<K,V>* bt = leaf;
+
+				while(bt != nullptr){
+					if(bt->num_children < half_order){
+						merge(bt);
+						bt = bt->parent;
+					}
+					else
+					    break;
+				}
+				return true;
+			}
 			return false;
 		}
 
@@ -87,6 +108,406 @@ namespace BtreeNS
 			return static_cast<Leaf_node<K,V>*>(leaf);
 		}
 
+		void merge(node<K,V>* pnode){
+			if(pnode->type == Leaf)
+			    merge_Leaf(static_cast<Leaf_node<K,V>*>(pnode));
+			else
+			    merge_Internal(static_cast<Internal_node<K,V>*>(pnode));
+		}
+
+		void merge_Leaf(Leaf_node<K,V>* leaf){
+			Internal_node<K,V>* pp = leaf->parent;
+			if(pp == nullptr)
+			    return;//it is root no need to merge
+			else{
+				if(pp->children[0] == leaf){
+					//merge first child 
+					Leaf_node<K,V>* rsibling = static_cast<Leaf_node<K,V>*>(pp->children[1]);
+					if(rsibling->num_children > half_order){
+						/*
+						//borrowing one from right sibling
+						//    7        12 
+						//   / \        \
+						//  /   \        \
+						//  |   7 8 9     12 14 16 
+						//  |
+						//  4
+						//
+						//
+						//    8        12 
+						//   / \        \
+						//  /   \        \
+						//  |    8 9     12 14 16 
+						//  |
+						//  4 7
+						*/   
+						leaf->keys[leaf->num_children] = rsibling->keys[0];
+						leaf->values[leaf->num_children] = rsibling->values[0];
+
+						memmove(rsibling->keys,
+						rsibling->keys + 1,
+						(rsibling->num_children - 1) * sizeof(K));
+
+						memmove(rsibling->values,
+						rsibling->values + 1,
+						(rsibling->num_children - 1) * sizeof(V));
+
+						++(leaf->num_children);
+						--(rsibling->num_children);
+
+						//key of parent has to be changed too
+						pp->keys[0] = rsibling->keys[0];
+					}else{
+						/*
+						//merge the right sibling
+						//    7        12 
+						//   / \        \
+						//  /   \        \
+						//  |   7 8       12 14 16 
+						//  |
+						//  4
+						//
+						//
+						//   12 
+						//   / \ 
+						//  /   \ 
+						//  |    12 14 16 
+						//  |
+						//  4 7 8
+						*/
+						
+						memmove(leaf->keys + leaf->num_children,
+						rsibling->keys,
+						rsibling->num_children * sizeof(K));
+
+						memmove(leaf->values + leaf->num_children,
+						rsibling->values,
+						rsibling->num_children * sizeof(V));
+
+						leaf->num_children += rsibling->num_children;
+
+						//remove right sibling ref from parent
+						memmove(pp->keys,
+						pp->keys + 1,
+						(pp->num_children - 2) * sizeof(K));
+
+						memmove(pp->children + 1,
+						pp->children + 2,
+						(pp->num_children - 2) * sizeof(node<K,V>*));
+
+						--(pp->num_children);
+						delete rsibling;
+					}
+				}else{
+					for(int i = 0;i < pp->num_children - 1;i++){
+						if(pp->children[i + 1] == leaf){
+							Leaf_node<K,V>* lsibling = static_cast<Leaf_node<K,V>*>(pp->children[i]);
+							if(lsibling->num_children > half_order){
+								/*
+								//borrowing one from left sibling
+								//    10        12 
+								//   / \        \
+								//  /   \        \
+								//  |    10        12 14 16 
+								//  |
+								//  4 7 9
+								//
+								//
+								//    9        12 
+								//   / \        \
+								//  /   \        \
+								//  |    9 10     12 14 16 
+								//  |
+								//  4 7
+								*/
+
+								memmove(leaf->keys + 1,
+								leaf->keys,
+								leaf->num_children * sizeof(K)
+								);
+
+								memmove(leaf->values + 1,
+								leaf->values,
+								leaf->num_children * sizeof(V)
+								);
+
+								leaf->keys[0] = lsibling->keys[lsibling->num_children - 1];
+								leaf->values[0] = lsibling->values[lsibling->num_children - 1];
+
+								++(leaf->num_children);
+								--(lsibling->num_children);
+
+								//key of parent has to be changed too
+								pp->keys[i] = leaf->keys[0];
+							}else{
+								/*
+								//merge the left sibling
+								//    7        12 
+								//   / \        \
+								//  /   \        \
+								//  |   7 8       12 14 16 
+								//  |
+								//  4
+								//
+								//
+								//    4        12 
+								//   / \        \
+								//  /   \        \
+								//  |    4 7 8    12 14 16 
+								//  |
+								//  ..
+								*/
+
+								memmove(leaf->keys + lsibling->num_children,
+								leaf->keys,
+								leaf->num_children * sizeof(K));
+
+								memmove(leaf->values + lsibling->num_children,
+								leaf->values,
+								leaf->num_children * sizeof(V));
+
+								memmove(leaf->keys,
+								lsibling->keys,
+								lsibling->num_children * sizeof(K));
+
+								memmove(leaf->values,
+								lsibling->values,
+								lsibling->num_children * sizeof(V));
+
+								leaf->num_children += lsibling->num_children;
+
+								//remove left sibling ref from parent
+								if(i != 0){
+									memmove(pp->keys + i - 1,
+									pp->keys + i,
+									(pp->num_children - 1 - i) * sizeof(K));
+
+									memmove(pp->children + i,
+									pp->children + i + 1,
+									(pp->num_children - 1 - i) * sizeof(node<K,V>*));
+								}else{
+									memmove(pp->keys,
+									pp->keys + 1,
+									(pp->num_children - 1) * sizeof(K));
+
+									memmove(pp->children,
+									pp->children + 1,
+									(pp->num_children - 1) * sizeof(node<K,V>*));
+								}
+								
+
+								--(pp->num_children);
+								delete lsibling;
+							}
+						}
+				    }
+				}
+				
+			}
+		}
+
+		void merge_Internal(Internal_node<K,V>* internal){
+			Internal_node<K,V>* pp = internal->parent;
+			if(pp == nullptr)
+			    return;//it is root no need to merge
+			else{
+				if(pp->children[0] == internal){
+					//merge first child 
+					Internal_node<K,V>* rsibling = static_cast<Internal_node<K,V>*>(pp->children[1]);
+					if(rsibling->num_children > half_order){
+						/*
+						//borrowing one from right sibling (ignore graph below)
+						//    6        12 
+						//   / \        \
+						//  /   \        \
+						//  |   7 8 9     12 14 16 
+						//  |   |
+						//  4   6
+						//  |\
+						//  3 4 5 
+						//
+						//
+						//    8        12 
+						//   / \        \
+						//  /   \        \
+						//  |    8 9     12 14 16 
+						//  |
+						//  4 7
+						*/   
+						internal->keys[internal->num_children] = rsibling->getNodeKey();
+						internal->children[internal->num_children] = rsibling->children[0];
+
+						memmove(rsibling->keys,
+						rsibling->keys + 1,
+						(rsibling->num_children - 1) * sizeof(K));
+
+						memmove(rsibling->children,
+						rsibling->children + 1,
+						(rsibling->num_children - 1) * sizeof(Internal_node<K,V>*));
+
+						++(internal->num_children);
+						--(rsibling->num_children);
+
+						//key of parent has to be changed too
+						pp->keys[0] = rsibling->getNodeKey();
+					}else{
+						/*
+						//merge the right sibling
+						//    7        12 
+						//   / \        \
+						//  /   \        \
+						//  |   7 8       12 14 16 
+						//  |
+						//  4
+						//
+						//
+						//   12 
+						//   / \ 
+						//  /   \ 
+						//  |    12 14 16 
+						//  |
+						//  4 7 8
+						*/
+
+						internal->keys[internal->num_children] = rsibling->getNodeKey();
+						
+						memmove(internal->keys + internal->num_children + 1,
+						rsibling->keys,
+						(rsibling->num_children - 1) * sizeof(K));
+
+						memmove(internal->children + internal->num_children,
+						rsibling->children,
+						rsibling->num_children * sizeof(node<K,V>*));
+
+						internal->num_children += rsibling->num_children;
+
+						//remove right sibling ref from parent
+						memmove(pp->keys,
+						pp->keys + 1,
+						(pp->num_children - 2) * sizeof(K));
+
+						memmove(pp->children + 1,
+						pp->children + 2,
+						(pp->num_children - 2) * sizeof(node<K,V>*));
+
+						--(pp->num_children);
+						delete rsibling;
+					}
+				}else{
+					for(int i = 0;i < pp->num_children - 1;i++){
+						if(pp->children[i + 1] == internal){
+							Internal_node<K,V>* lsibling = static_cast<Internal_node<K,V>*>(pp->children[i]);
+							if(lsibling->num_children > half_order){
+								/*
+								//borrowing one from left sibling
+								//    10        12 
+								//   / \        \
+								//  /   \        \
+								//  |    10        12 14 16 
+								//  |
+								//  4 7 9
+								//
+								//
+								//    9        12 
+								//   / \        \
+								//  /   \        \
+								//  |    9 10     12 14 16 
+								//  |
+								//  4 7
+								*/
+
+								K origin_key = internal->getNodeKey();
+
+								memmove(internal->keys + 1,
+								internal->keys,
+								(internal->num_children - 1) * sizeof(K)
+								);
+
+								memmove(internal->children + 1,
+								internal->children,
+								internal->num_children * sizeof(node<K,V>*)
+								);
+
+								internal->children[0] = lsibling->children[lsibling->num_children - 1];
+								internal->keys[0] = origin_key;
+								
+
+								++(internal->num_children);
+								--(lsibling->num_children);
+
+								//key of parent has to be changed too
+								pp->keys[i] = internal->getNodeKey();
+							}else{
+								/*
+								//merge the left sibling
+								//    7        12 
+								//   / \        \
+								//  /   \        \
+								//  |   7 8       12 14 16 
+								//  |
+								//  4
+								//
+								//
+								//    4        12 
+								//   / \        \
+								//  /   \        \
+								//  |    4 7 8    12 14 16 
+								//  |
+								//  ..
+								*/
+
+								K origin_key = internal->getNodeKey();
+
+								memmove(internal->keys + lsibling->num_children,
+								internal->keys,
+								internal->num_children * sizeof(K));
+
+								internal->keys[lsibling->num_children] = origin_key;
+
+								memmove(internal->children + lsibling->num_children,
+								internal->children,
+								internal->num_children * sizeof(node<K,V>*));
+
+								memmove(internal->keys,
+								lsibling->keys,
+								(lsibling->num_children - 1) * sizeof(K));
+
+								memmove(internal->children,
+								lsibling->children,
+								lsibling->num_children * sizeof(node<K,V>*));
+
+								internal->num_children += lsibling->num_children;
+
+								//remove left sibling ref from parent
+								if(i != 0){
+									memmove(pp->keys + i - 1,
+									pp->keys + i,
+									(pp->num_children - 1 - i) * sizeof(K));
+
+									memmove(pp->children + i,
+									pp->children + i + 1,
+									(pp->num_children - 1 - i) * sizeof(node<K,V>*));
+								}else{
+									memmove(pp->keys,
+									pp->keys + 1,
+									(pp->num_children - 1) * sizeof(K));
+
+									memmove(pp->children,
+									pp->children + 1,
+									(pp->num_children - 1) * sizeof(node<K,V>*));
+								}
+								
+
+								--(pp->num_children);
+								delete lsibling;
+							}
+						}
+				    }
+				}
+				
+			}
+		}
+
         void split(node<K,V>* pnode){
 			if(pnode->type == Leaf)
 			    split_leaf(static_cast<Leaf_node<K,V>*>(pnode));
@@ -95,8 +516,6 @@ namespace BtreeNS
 		}
 
 		void split_Internal(Internal_node<K,V>* internal){
-			
-			int half_order = 0.5 * order;
 			int right_node_size = order - half_order;
 
 			Internal_node<K, V>* right_node = new Internal_node<K, V>(order);
@@ -161,8 +580,6 @@ namespace BtreeNS
 			// before split: this 
 			// after split: this | right_node
 			Leaf_node<K,V>* right_node = new Leaf_node<K,V>(order);
-
-			int half_order = 0.5 * order;
 
 			int right_node_size = order - half_order;
 
@@ -316,6 +733,7 @@ namespace BtreeNS
 		}
 
 	    int order;
+		int half_order;
 		node<K,V>* root;
 	};
 
