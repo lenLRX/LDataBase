@@ -76,7 +76,7 @@ namespace BtreeNS
 				node<K,V>* bt = leaf;
 
 				while(bt != nullptr){
-					if(bt->num_children < half_order){
+					if(bt->num_children <= half_order){
 						merge(bt);
 						bt = bt->parent;
 					}
@@ -197,6 +197,12 @@ namespace BtreeNS
 
 						--(pp->num_children);
 						delete rsibling;
+
+						if(1 == pp->num_children && pp->parent == nullptr){
+							root = leaf;
+							leaf->parent = nullptr;
+							delete pp;
+						}
 					}
 				}else{
 					for(int i = 0;i < pp->num_children - 1;i++){
@@ -278,9 +284,9 @@ namespace BtreeNS
 
 								//remove left sibling ref from parent
 								if(i != 0){
-									memmove(pp->keys + i - 1,
-									pp->keys + i,
-									(pp->num_children - 1 - i) * sizeof(K));
+									memmove(pp->keys + i,
+									pp->keys + i + 1,
+									(pp->num_children - 2 - i) * sizeof(K));
 
 									memmove(pp->children + i,
 									pp->children + i + 1,
@@ -298,6 +304,12 @@ namespace BtreeNS
 
 								--(pp->num_children);
 								delete lsibling;
+
+								if(1 == pp->num_children && pp->parent == nullptr){
+									root = leaf;
+									leaf->parent = nullptr;
+									delete pp;
+								}
 							}
 						}
 				    }
@@ -334,8 +346,9 @@ namespace BtreeNS
 						//  |
 						//  4 7
 						*/   
-						internal->keys[internal->num_children] = rsibling->getNodeKey();
+						internal->keys[internal->num_children - 1] = rsibling->getNodeKey();
 						internal->children[internal->num_children] = rsibling->children[0];
+						internal->children[internal->num_children]->parent = internal;
 
 						memmove(rsibling->keys,
 						rsibling->keys + 1,
@@ -350,6 +363,8 @@ namespace BtreeNS
 
 						//key of parent has to be changed too
 						pp->keys[0] = rsibling->getNodeKey();
+
+						LOG << "borrow rsibling" << endl;
 					}else{
 						/*
 						//merge the right sibling
@@ -369,9 +384,15 @@ namespace BtreeNS
 						//  4 7 8
 						*/
 
-						internal->keys[internal->num_children] = rsibling->getNodeKey();
+						K tmp = rsibling->getNodeKey();
+
+						for(int j = 0;j < rsibling->num_children;j++){
+							rsibling->children[j]->parent = internal;
+						}
+
+						internal->keys[internal->num_children - 1] = rsibling->getNodeKey();
 						
-						memmove(internal->keys + internal->num_children + 1,
+						memmove(internal->keys + internal->num_children,
 						rsibling->keys,
 						(rsibling->num_children - 1) * sizeof(K));
 
@@ -392,6 +413,15 @@ namespace BtreeNS
 
 						--(pp->num_children);
 						delete rsibling;
+						//std::cout << "merging rsibling : " << tmp << std::endl;
+						if(1 == pp->num_children && pp->parent == nullptr){
+							//it will be new root
+							root = internal;
+							internal->parent = nullptr;
+							delete pp;
+						}
+
+						LOG << "merge rsibling" << endl;
 					}
 				}else{
 					for(int i = 0;i < pp->num_children - 1;i++){
@@ -431,12 +461,14 @@ namespace BtreeNS
 								internal->children[0] = lsibling->children[lsibling->num_children - 1];
 								internal->keys[0] = origin_key;
 								
+								internal->children[0]->parent = internal;
 
 								++(internal->num_children);
 								--(lsibling->num_children);
 
 								//key of parent has to be changed too
 								pp->keys[i] = internal->getNodeKey();
+								LOG << "borrow lsibling" << endl;
 							}else{
 								/*
 								//merge the left sibling
@@ -457,12 +489,14 @@ namespace BtreeNS
 								*/
 
 								K origin_key = internal->getNodeKey();
+								std::cout << "i: " << i << " num_children : " << internal->num_children << std::endl;
+								K l_key = lsibling->getNodeKey();
 
 								memmove(internal->keys + lsibling->num_children,
 								internal->keys,
-								internal->num_children * sizeof(K));
+								(internal->num_children - 1) * sizeof(K));
 
-								internal->keys[lsibling->num_children] = origin_key;
+								internal->keys[lsibling->num_children - 1] = origin_key;
 
 								memmove(internal->children + lsibling->num_children,
 								internal->children,
@@ -476,13 +510,18 @@ namespace BtreeNS
 								lsibling->children,
 								lsibling->num_children * sizeof(node<K,V>*));
 
+								//update parent
+								for(int j = 0;j < lsibling->num_children;j++){
+									internal->children[j]->parent = internal;
+								}
+
 								internal->num_children += lsibling->num_children;
 
 								//remove left sibling ref from parent
 								if(i != 0){
-									memmove(pp->keys + i - 1,
-									pp->keys + i,
-									(pp->num_children - 1 - i) * sizeof(K));
+									memmove(pp->keys + i,
+									pp->keys + i + 1,
+									(pp->num_children - 2 - i) * sizeof(K));
 
 									memmove(pp->children + i,
 									pp->children + i + 1,
@@ -490,7 +529,7 @@ namespace BtreeNS
 								}else{
 									memmove(pp->keys,
 									pp->keys + 1,
-									(pp->num_children - 1) * sizeof(K));
+									(pp->num_children - 2) * sizeof(K));
 
 									memmove(pp->children,
 									pp->children + 1,
@@ -500,6 +539,15 @@ namespace BtreeNS
 
 								--(pp->num_children);
 								delete lsibling;
+								//std::cout << "num_children : " << internal->num_children << std::endl;
+								//std::cout << "merging lsibling : " << l_key << " origin " << origin_key << std::endl;
+
+								if(1 == pp->num_children && pp->parent == nullptr){
+									root = internal;
+									internal->parent = nullptr;
+									delete pp;
+								}
+								LOG << "merge lsibling" << endl;
 							}
 						}
 				    }

@@ -4,6 +4,7 @@
 #include <utility>//for std::pair
 #include <cstdlib>
 #include <cstring>//for memmove
+#include <log/log.h>
 
 namespace BtreeNS
 {
@@ -112,6 +113,10 @@ namespace BtreeNS
 					);
 
 					--num_children;
+					if(i == 0 && parent != nullptr){
+						//first element changed
+						parent->updateKey(this,keys[0]);
+					}
 					return true;
 				}
 			}
@@ -150,6 +155,20 @@ namespace BtreeNS
 		virtual ~Internal_node(){
 			delete[] keys;
 			delete[] children;
+		}
+
+		void updateKey(node<K,V>* child,const K& key){
+			LOG << "update Key" << endl;
+			if(child == children[0]){
+				if(parent != nullptr)
+				    parent->updateKey(this,getNodeKey());
+			}else{
+				for(int i = 1;i < num_children;i++){
+					if(child == children[i]){
+						keys[i - 1] = key;
+					}
+				}
+			}
 		}
 
 		K& getNodeKey(){
