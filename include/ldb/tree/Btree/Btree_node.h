@@ -158,7 +158,7 @@ namespace BtreeNS
 		}
 
 		void updateKey(node<K,V>* child,const K& key){
-			LOG << "update Key" << endl;
+			//LOG << "update Key" << endl;
 			if(child == children[0]){
 				if(parent != nullptr)
 				    parent->updateKey(this,getNodeKey());

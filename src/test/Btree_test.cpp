@@ -8,9 +8,9 @@
 using namespace std;
 using namespace BtreeNS;
 
-static Btree<int,int> _tree(5);
+static Btree<int,int> _tree(50);
 
-static const int test_scale = 30;
+static const int test_scale = 100000;
 
 static vector<int> keys;
 static vector<int> values;
@@ -60,11 +60,11 @@ bool check_Btree(){
 
 bool remove_values_Btree(){
 	bool b = true;
-	_tree.visualize();
+	//_tree.visualize();
 	for(int i = 0;i < test_scale;i++){
-		cout << " remove: " << keys[i] << endl;
+		//cout << " remove: " << keys[i] << endl;
 		bool ret =  _tree.remove(keys[i]);
-		_tree.visualize();
+		//_tree.visualize();
 		if(!ret)
 		    cout << "remove error" << endl;
 		b = b & ret;
