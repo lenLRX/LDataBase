@@ -1,6 +1,6 @@
 #ifndef __BINARY_SEARCH_TREE_NODE_H__
 #define __BINARY_SEARCH_TREE_NODE_H__
-
+#include <log/log.h>
 template<typename K,typename V>
 class binary_search_tree_node
 {

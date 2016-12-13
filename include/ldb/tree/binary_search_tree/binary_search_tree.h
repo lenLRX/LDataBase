@@ -58,7 +58,7 @@ public:
 					root = nullptr;
 				}
 				else{
-					if(to_delete->value > to_delete->parent->value){
+					if(to_delete->key > to_delete->parent->key){
 						to_delete->parent->right = nullptr;
 					}else{
 						to_delete->parent->left = nullptr;
@@ -66,6 +66,7 @@ public:
 				}
 				
 				delete to_delete;
+				
 				return true;
 			}else if(to_delete->left != nullptr && to_delete->right != nullptr){
 				//both child not null 
@@ -89,7 +90,7 @@ public:
 				}
 				to_delete->left->parent = to_delete->parent;
 				right_most_lchild->right = to_delete->right;
-				to_delete->parent = right_most_lchild;
+				to_delete->right->parent = right_most_lchild;
 				delete to_delete;
 				return true;
 			}else{
