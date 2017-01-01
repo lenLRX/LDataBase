@@ -1,12 +1,12 @@
-#ifndef __BTREE_NODE_H__
-#define __BTREE_NODE_H__
+#ifndef __BPlusTree_NODE_H__
+#define __BPlusTree_NODE_H__
 
 #include <utility>//for std::pair
 #include <cstdlib>
 #include <cstring>//for memmove
 #include <log/log.h>
 
-namespace BtreeNS
+namespace BPlusTreeNS
 {
 	enum node_type{
 		Internal = 0,
@@ -413,4 +413,4 @@ namespace BtreeNS
 
 
 
-#endif//__BTREE_NODE_H__
+#endif//__BPlusTree_NODE_H__

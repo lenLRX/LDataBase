@@ -1,14 +1,14 @@
 #include <test/test.h>
 #include <log/log.h>
-#include <ldb/tree/Btree/Btree.h>
+#include <ldb/tree/BPlusTree/BPlusTree.h>
 #include <vector>
 #include <random>
 #include <algorithm>
 #include <time.h>
 using namespace std;
-using namespace BtreeNS;
+using namespace BPlusTreeNS;
 
-static Btree<int,int> _tree(50);
+static BPlusTree<int,int> _tree(50);
 
 static const int test_scale = 100000;
 
@@ -27,7 +27,7 @@ static uniform_int_distribution<int> distribution(1,10000);
 
 static int RandomNumber () { return (distribution(gen)); }
 
-bool build_Btree(){
+bool build_BPlusTree(){
 	keys.resize(test_scale);
 	values.resize(test_scale);
 
@@ -45,7 +45,7 @@ bool build_Btree(){
 }
 
 
-bool check_Btree(){
+bool check_BPlusTree(){
 	//_tree.visualize();
 	for(int i = 0;i < test_scale;i++){
 		auto _got_value = _tree.get(keys[i]);
@@ -58,7 +58,7 @@ bool check_Btree(){
 	return true;
 }
 
-bool remove_values_Btree(){
+bool remove_values_BPlusTree(){
 	bool b = true;
 	//_tree.visualize();
 	for(int i = 0;i < test_scale;i++){
@@ -73,6 +73,6 @@ bool remove_values_Btree(){
 }
 
 
-ADDTEST(build_Btree)
-ADDTEST(check_Btree)
-ADDTEST(remove_values_Btree)
+ADDTEST(build_BPlusTree)
+ADDTEST(check_BPlusTree)
+ADDTEST(remove_values_BPlusTree)

@@ -1,7 +1,7 @@
-#ifndef __BTREE_H__
-#define __BTREE_H__
+#ifndef __BPlusTree_H__
+#define __BPlusTree_H__
 #include "../tree.h"
-#include "Btree_node.h"
+#include "BPlusTree_node.h"
 #include <iostream>
 #include <map>
 #include <string>
@@ -21,14 +21,14 @@ All leaves appear in the same level
 */
 
 
-namespace BtreeNS
+namespace BPlusTreeNS
 {
 	template<typename K,typename V>
-	class Btree:public tree<K,V>
+	class BPlusTree:public tree<K,V>
 	{
 	public:
-		Btree(int order):order(order),half_order(order / 2),root(nullptr){}
-		virtual ~Btree(){}
+		BPlusTree(int order):order(order),half_order(order / 2),root(nullptr){}
+		virtual ~BPlusTree(){}
 
 		void visualize(){
 			std::map<int,std::string> datas;
@@ -389,8 +389,6 @@ namespace BtreeNS
 						//  4 7 8
 						*/
 
-						K tmp = rsibling->getNodeKey();
-
 						for(int j = 0;j < rsibling->num_children;j++){
 							rsibling->children[j]->parent = internal;
 						}
@@ -495,8 +493,6 @@ namespace BtreeNS
 								*/
 
 								K origin_key = internal->getNodeKey();
-								//std::cout << "i: " << i << " num_children : " << internal->num_children << std::endl;
-								K l_key = lsibling->getNodeKey();
 
 								memmove(internal->keys + lsibling->num_children,
 								internal->keys,
@@ -794,4 +790,4 @@ namespace BtreeNS
 	};
 
 };
-#endif//__BTREE_H__
+#endif//__BPlusTree_H__
