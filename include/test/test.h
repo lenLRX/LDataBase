@@ -89,24 +89,20 @@ if (p.second())\
 {\
 	detail += " fail "; \
 }\
-	_test_details.push_back(detail); \
+	LOG << detail << endl; \
 }\
 for (pair<string, function<void(void)>> p : TestManager::getInstance()._test_bunch_functions)\
 {\
 	string detail = p.first; \
 	LOG << "running bunch test: " << detail << endl;\
 	p.second();\
-	_test_details.push_back(detail); \
+	LOG << detail << endl; \
 }\
 }while (0)
 
 #define SUMMARY \
 do \
 {\
-for (string line : _test_details)\
-{\
-	LOG << line << endl; \
-}\
 	LOG << success_count << " of " << test_count << " ( " \
 	<< (float)success_count / test_count << " ) passed" << endl; \
 } while (0)
