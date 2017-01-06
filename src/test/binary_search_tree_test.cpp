@@ -1,6 +1,7 @@
 #include <test/test.h>
 #include <log/log.h>
 #include <ldb/tree/binary_search_tree/binary_search_tree.h>
+#include <ldb/file/FileManager.h>
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -62,6 +63,20 @@ bool traversel_binary_search_tree(){
 	return counter == test_scale;
 }
 
+bool binary_search_tree_dump_to_file(){
+	string test_file_name = "/tmp/binary_search_tree_dump_to_file";
+	FileManager test_file(test_file_name);
+	function<void(void*)> fn = [&test_file](void* p){
+		test_file.write(test_file.alloc(sizeof(binary_search_tree_node<int,int>)),
+		p,
+		sizeof(binary_search_tree_node<int,int>) );
+	};
+
+	_tree.traversal(fn);
+	
+	return true;
+}
+
 bool remove_values_binary_search_tree(){
 	bool b = true;
 	for(int i = 0;i < test_scale;i++){
@@ -74,4 +89,5 @@ bool remove_values_binary_search_tree(){
 ADDTEST(build_binary_search_tree)
 ADDTEST(check_binary_search_tree)
 ADDTEST(traversel_binary_search_tree)
+ADDTEST(binary_search_tree_dump_to_file)
 ADDTEST(remove_values_binary_search_tree)

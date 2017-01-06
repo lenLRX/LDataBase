@@ -9,7 +9,11 @@ class binary_search_tree:public tree<K,V>
 	typedef binary_search_tree_node<K,V> tree_node;
 public:
     binary_search_tree():tree<K,V>(),root(nullptr){}
-	virtual ~binary_search_tree(){}
+	virtual ~binary_search_tree(){
+		if(root != nullptr)
+		    root->remove_children_r();
+		delete root;
+	}
 
     virtual void put(const K& key,const V& value){
 		if(root == nullptr){
