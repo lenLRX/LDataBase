@@ -16,8 +16,8 @@ class TestManager
 {
 public:
 	static TestManager& getInstance();
-	map<string, function<bool(void)>> _test_functions;
-	map<string, function<void(void)>> _test_bunch_functions;
+	vector<pair<string, function<bool(void)>>> _test_functions;
+	vector<pair<string, function<bool(void)>>> _test_bunch_functions;
 private:
 
 	TestManager() = default;
@@ -26,7 +26,9 @@ private:
 
 #define __TEST_REGISTER_FUNC(testfunc)\
 	int testfunc##TEST_REGISTER_FUNC(){\
-	TestManager::getInstance()._test_functions[#testfunc] = function<bool(void)>(testfunc); \
+	TestManager::getInstance()._test_functions.push_back(\
+	pair<string, function<bool(void)>>(\
+	#testfunc, function<bool(void)>(testfunc))); \
 	return 0;\
 	}
 
@@ -36,8 +38,9 @@ private:
 
 #define __TEST_REGISTER_BUNCH_FUNC(testbunchfunc)\
     int testbunchfunc##TEST_BUNCH_FUNC(){\
-	TestManager::getInstance()._test_bunch_functions[#testbunchfunc] = \
-	function<void(void)>(testbunchfunc);\
+	TestManager::getInstance()._test_bunch_functions.push_back(\
+	pair<string, function<bool(void)>>(\
+	#testbunchfunc, function<void(void)>(testbunchfunc)));\
 	return 0;\
 	}
 

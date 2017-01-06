@@ -141,6 +141,11 @@ public:
 		}
 		return pair<bool,V>(false,V());
 	}
+
+	virtual void traversal(function<void(void*)>& fn){
+		if(root != nullptr)
+		    root->traversal(fn);
+	}
 private:
     tree_node* get_ptr(const K& key){
 		tree_node* curr = root;

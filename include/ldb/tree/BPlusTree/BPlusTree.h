@@ -784,6 +784,10 @@ namespace BPlusTreeNS
 			}
 		}
 
+		virtual void traversal(function<void(void*)>& fn){
+			;
+		}
+
 	    int order;
 		int half_order;
 		node<K,V>* root;

@@ -16,6 +16,14 @@ public:
    binary_search_tree_node<K,V>*  right;
    K key;
    V value;
+
+   void traversal(function<void(void*)>& fn){
+		fn(this);
+		if(left != nullptr)
+		    left->traversal(fn);
+		if(right != nullptr)
+		    right->traversal(fn);
+	}
 };
 
 #endif//__BINARY_SEARCH_TREE_NODE_H__

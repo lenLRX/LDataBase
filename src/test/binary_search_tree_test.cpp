@@ -52,6 +52,16 @@ bool check_binary_search_tree(){
 	return true;
 }
 
+bool traversel_binary_search_tree(){
+	int counter = 0;
+	function<void(void*)> fn = [&counter](void* p){
+		counter++;
+	};
+
+	_tree.traversal(fn);
+	return counter == test_scale;
+}
+
 bool remove_values_binary_search_tree(){
 	bool b = true;
 	for(int i = 0;i < test_scale;i++){
@@ -63,4 +73,5 @@ bool remove_values_binary_search_tree(){
 
 ADDTEST(build_binary_search_tree)
 ADDTEST(check_binary_search_tree)
+ADDTEST(traversel_binary_search_tree)
 ADDTEST(remove_values_binary_search_tree)
